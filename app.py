@@ -1,23 +1,29 @@
+
 import pandas as pd
+from flask import Flask
+from markupsafe import escape
 
-df = pd.read_csv('data.csv', index_col='tag')
+app = Flask(__name__)
 
+# df = pd.read_csv('data.csv', index_col='tag')
+df = pd.read_csv('data.csv')
 
 def get_quote(tag):
   '''
   '''
+  filter_df = df
   try:
     if tag:
-      return df[df['tag'].str.contains(tag)][0]
-    else:
-      return df.sample()
+      filter_df = df[df['tag'].str.contains(tag)]
+    return filter_df.sample()
   except:
-    return df.sample()
+    return filter_df.sample()
 
-def application(env, start_response):
-  '''
-  '''
-  tag = get_query('tag')
+@app.route('/quote/')
+@app.route('/quote/<tag>')
+def index(tag=None):
   quote = get_quote(tag)
-  start_response('200 OK', [('Content-Type','application/json')])
-  return to_json(quote)
+  return quote.to_json()
+
+if __name__ == '__main__':
+    app.run()
